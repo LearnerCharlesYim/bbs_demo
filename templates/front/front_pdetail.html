@@ -39,6 +39,9 @@
         </div>
         <div class="comment-group">
             <h3>评论列表</h3>
+            {% if not post.comments %}
+                暂无评论
+            {% endif %}
             <ul class="comment-list-group" id="ul">
                 {% for comments_info in comments_infos %}
                     <li class="comment-li">

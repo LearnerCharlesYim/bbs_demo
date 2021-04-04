@@ -7,9 +7,10 @@ from exts import db,mail
 from utils import restful,zlcache
 from flask_mail import Message
 import string,random,re
-from ..models import BannerModel,BoardModel,PostModel,HighlightPostModel
+from ..models import BannerModel,BoardModel,PostModel,HighlightPostModel,PostStarModel,CommentModel
 from flask_paginate import get_page_parameter,Pagination
-
+from apps.front.models import FrontUser
+from sqlalchemy.sql import func
 
 bp = Blueprint("cms",__name__,url_prefix='/cms')
 
@@ -65,14 +66,37 @@ def email_captcha():
 @login_required
 @permission_required(CMSPermission.POSTER)
 def posts():
+    sort = request.args.get('sort',type=int,default=1)
+    board_id = request.args.get('board',type=int,default=0)
     page = request.args.get(get_page_parameter(), type=int, default=1)
     start = (page - 1) * config.PER_PAGE
     end = start + config.PER_PAGE
-    total = PostModel.query.count()
+    query_obj = None
+    if sort == 1:
+        query_obj = PostModel.query.order_by(PostModel.create_time.desc())
+    elif sort == 2:
+        query_obj = db.session.query(PostModel).outerjoin(HighlightPostModel).order_by(HighlightPostModel.create_time.desc(),PostModel.create_time.desc())
+    elif sort == 3:
+        query_obj = db.session.query(PostModel).outerjoin(CommentModel).group_by(PostModel.id).order_by(func.count(CommentModel.id).desc(), PostModel.create_time.desc())
+    elif sort == 4:
+        query_obj = db.session.query(PostModel).outerjoin(PostStarModel).group_by(PostModel.id).order_by(func.count(PostStarModel.id).desc(), PostModel.create_time.desc())
+
+    if board_id:
+        query_obj = query_obj.filter(PostModel.board_id == board_id)
+        posts = query_obj.slice(start, end)
+        total = query_obj.count()
+    else:
+        posts = query_obj.slice(start,end)
+        total = query_obj.count()
+
+
     pagination = Pagination(bs_version=3, page=page, total=total, outer_window=0, inner_window=2)
     context = {
-        'posts':PostModel.query.order_by(PostModel.create_time.desc()).slice(start, end),
-        'pagination': pagination
+        'boards':BoardModel.query.all(),
+        'posts':posts,
+        'pagination': pagination,
+        'c_sort':sort,
+        'c_board':board_id
     }
     return render_template('cms/cms_posts.html',**context)
 
@@ -94,6 +118,22 @@ def hpost():
     db.session.add(highlight)
     db.session.commit()
     return restful.success()
+
+
+@bp.route('/dpost/',methods=['POST'])
+@login_required
+@permission_required(CMSPermission.POSTER)
+def dpost():
+    post_id = request.form.get('post_id')
+    if not post_id:
+        return restful.params_error('请传入帖子id！')
+    post = PostModel.query.get(post_id)
+    if not post:
+        return restful.params_error("没有这篇帖子！")
+    db.session.delete(post)
+    db.session.commit()
+    return restful.success()
+
 
 
 #后台取消加精
@@ -132,17 +172,63 @@ def boards():
     return render_template('cms/cms_boards.html',**context)
 
 
-@bp.route('/fsuers/')
+@bp.route('/fusers/')
 @login_required
 @permission_required(CMSPermission.FRONTUSER)
 def fusers():
-    return render_template('cms/cms_fusers.html')
+    sort = request.args.get('sort', type=int, default=1)
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    start = (page - 1) * config.PER_PAGE
+    end = start + config.PER_PAGE
+    query_obj = None
+    if sort == 1:
+        query_obj = FrontUser.query.order_by(FrontUser.join_time.desc())
+    elif sort == 2:
+        query_obj = db.session.query(FrontUser).outerjoin(PostModel).group_by(FrontUser.id).order_by(func.count(PostModel.id).desc(),FrontUser.join_time.desc())
+
+    elif sort ==3:
+        query_obj = db.session.query(FrontUser).outerjoin(CommentModel).group_by(FrontUser.id).order_by(func.count(CommentModel.id).desc(),FrontUser.join_time.desc())
+
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    start = (page - 1) * config.PER_PAGE
+
+    total = query_obj.count()
+    front_users = query_obj.slice(start, end)
+    pagination = Pagination(bs_version=3, page=page, total=total, outer_window=0, inner_window=2)
+    context = {
+        'front_users': front_users,
+        'pagination': pagination,
+        'c_sort':sort
+    }
+    return render_template('cms/cms_fusers.html', **context)
+
+
+@bp.route('/fusers/edit/<id>',methods=['GET','POST'])
+@login_required
+@permission_required(CMSPermission.FRONTUSER)
+def fuser_edit(id):
+    if request.method == 'GET':
+        front_user = FrontUser.query.get(id)
+        return render_template('cms/cms_edit_fusers.html',front_user=front_user)
+
 
 @bp.route('/cusers/')
 @login_required
 @permission_required(CMSPermission.CMSUSER)
 def cusers():
-    return render_template('cms/cms_cusers.html')
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    start = (page - 1) * config.PER_PAGE
+    end = start + config.PER_PAGE
+    total = CMSUser.query.count()
+    pagination = Pagination(bs_version=3, page=page, total=total, outer_window=0, inner_window=2)
+    context = {
+        'users': CMSUser.query.order_by(CMSUser.join_time.desc()).slice(start, end),
+        'pagination': pagination
+    }
+
+    return render_template('cms/cms_cmsusers.html',**context)
+
+
 
 @bp.route('/croles/')
 @login_required

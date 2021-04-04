@@ -1,17 +1,64 @@
 {% extends 'cms/cms_base.html' %}
 {% from "common/_macros.html" import static %}
 
-{% block title -%}
-    前台用户管理
-{%- endblock %}
-
-{% block page_title -%}
-    {{ self.title() }}
-{%- endblock %}
+{% block title %}前台用户管理{% endblock %}
 
 {% block head %}
+    <script src="{{ static("cms/js/fusers.js") }}"></script>
+    <script src="{{ static("common/zlparam.js") }}"></script>
+{% endblock %}
+
+{% block page_title %}
+    {{ self.title() }}
 {% endblock %}
 
 {% block main_content %}
-    前台用户管理页面
+        <div class="top-box">
+        <div class="sort-group">
+            <label>排序：</label>
+            <select class="top-select" id="sort-select">
+                <option value="1" {% if c_sort == 1 %}selected{% endif %}>按加入时间排序</option>
+                <option value="2" {% if c_sort == 2 %}selected{% endif %}>按发表帖子数排序</option>
+                <option value="3" {% if c_sort == 3 %}selected{% endif %}>按评论数排序</option>
+            </select>
+        </div>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th class="col-sm-2">用户名</th>
+                <th class="col-sm-2">手机号码</th>
+                <th class="col-sm-2">加入时间</th>
+                <th class="col-sm-2">发表帖子数</th>
+                <th class="col-sm-2">评论数</th>
+                <th class="col-sm-1">状态</th>
+                <th class="col-sm-1">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for front_user in front_users %}
+                <tr data-id="{{ front_user.id }}" status="">
+                    <td><a target="_blank" href="{{ url_for("front.user_profile",id=front_user.id) }}">{{ front_user.username }}</a></td>
+                    <td>{{ front_user.telephone }}</td>
+                    <td>{{ front_user.join_time }}</td>
+                    <td>{{ front_user.posts | length }}</td>
+                    <td>{{ front_user.comments | length }}</td>
+                    <td>
+                        {% if front_user %}
+                            <button class="btn btn-success btn-sm highlight-btn">可用</button>
+                        {% else %}
+                            <button class="btn btn-default btn-sm highlight-btn">黑名单</button>
+                        {% endif %}
+                    </td>
+                    <td><a href="{{ url_for('cms.fuser_edit',id=front_user.id) }}" type="button" class="btn btn-primary btn-sm remove-btn">编辑</a></td>
+                </tr>
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+    <div style="text-align:center;">
+         {{ pagination.links }}
+    </div>
+
 {% endblock %}

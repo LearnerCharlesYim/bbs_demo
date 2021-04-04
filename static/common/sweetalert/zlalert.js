@@ -34,7 +34,7 @@ var zlalert = {
             'title': '提示',
             'text': msg,
             'type': 'success',
-        }
+        };
         swal(args,confirmCallback);
     }, 
     /*

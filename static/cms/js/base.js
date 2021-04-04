@@ -1,3 +1,6 @@
+/**
+ * Created by Administrator on 2016/12/17.
+ */
 
 $(function () {
     $('.nav-sidebar>li>a').click(function (event) {
@@ -39,9 +42,12 @@ $(function () {
     }else if(url.indexOf('boards') >= 0){
         var boardManageLi = $('.board-manage');
         boardManageLi.addClass('unfold').siblings().removeClass('unfold');
-    } else if(url.indexOf('fusers') >= 0){
-        var userManageLi = $('.fuser-manage');
-        userManageLi.addClass('unfold').siblings().removeClass('unfold');
+    }else if(url.indexOf('permissions') >= 0){
+        var permissionManageLi = $('.permission-manage');
+        permissionManageLi.addClass('unfold').siblings().removeClass('unfold');
+    }else if(url.indexOf('fusers') >= 0){
+        var fuserManageLi = $('.fuser-manage');
+        fuserManageLi.addClass('unfold').siblings().removeClass('unfold');
     }else if(url.indexOf('cusers') >= 0){
         var cmsuserManageLi = $('.cmsuser-manage');
         cmsuserManageLi.addClass('unfold').siblings().removeClass('unfold');
@@ -51,8 +57,8 @@ $(function () {
     }else if(url.indexOf('comments') >= 0) {
         var commentsManageLi = $('.comments-manage');
         commentsManageLi.addClass('unfold').siblings().removeClass('unfold');
-    }else if(url.indexOf('banners') >=0) {
-        var bannerManageLi = $('.banners-manage');
+    }else if(url.indexOf("banners") >= 0){
+        var bannerManageLi = $(".banners-manage");
         bannerManageLi.addClass('unfold').siblings().removeClass('unfold');
     }
 });

@@ -33,7 +33,6 @@ def index():
         # 按照加精的时间倒叙排序
         query_obj = db.session.query(PostModel).outerjoin(HighlightPostModel).order_by(HighlightPostModel.create_time.desc(),PostModel.create_time.desc())
     elif sort == 3:
-
         # 按照点赞的数量排序
         query_obj = db.session.query(PostModel).outerjoin(PostStarModel).group_by(PostModel.id).order_by(func.count(PostStarModel.id).desc(),PostModel.create_time.desc())
     elif sort == 4:
@@ -58,9 +57,7 @@ def index():
         'current_board':board_id,
         'current_sort': sort
     }
-
     return render_template('front/front_index.html',**context)
-
 
 @bp.route('/logout/')
 @login_required
