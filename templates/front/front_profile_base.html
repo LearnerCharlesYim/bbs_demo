@@ -1,0 +1,53 @@
+{% extends 'front/front_base.html' %}
+{% from "common/_macros.html" import static %}
+
+{% block title %}{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" href="{{ static('front/css/front_profile_base.css')}}">
+    {% block profile_head %}{% endblock %}
+{% endblock %}
+
+
+{% block body %}
+    <div class="top-container">
+        <img src="{{ user.avatar or static('common/images/logo.jpg') }}" alt="username" class="avatar-img">
+        <div class="info">
+            {% if user %}
+            <p class="username">{{user.username}}</p>
+            {% endif %}
+
+
+            <div>
+                {% if user %}
+                    <p>个性签名：{{ user.signature or '这个家伙很懒，没有留下什么~' }}</p>
+                {% endif %}
+
+
+            </div>
+        </div>
+    </div>
+    <div class="bottom-container">
+        <div class="left-container">
+            <div class="list-group">
+
+                {% if user == g.front_user %}
+                    <span class="list-group-item list-title">个人中心</span>
+                    <a href="{{ url_for('front.profile') }}" class="list-group-item {% block profile %}{% endblock %}">资料</a>
+                    <a href="{{ url_for('front.profile_posts') }}" class="list-group-item{% block posts %}{% endblock %}">帖子</a>
+                    <a href="{{ url_for('front.replies') }}" class="list-group-item{% block reply %}{% endblock %}">回复我的</a>
+                {% elif user %}
+                    <span class="list-group-item list-title">用户资料</span>
+                    <a href="{{ url_for('front.user_profile' ,id=user.id) }}" class="list-group-item {% block u_profile %}{% endblock %} ">资料</a>
+                    <a href="{{ url_for('front.user_profile_posts',id=user.id) }}" class="list-group-item {% block u_posts %}{% endblock %}">帖子</a>
+                {% endif %}
+
+            </div>
+        </div>
+        <div class="right-container">
+            <div class="container-inner">
+                {% block right_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'front/front_profile_base.html' %}
+{% from "common/_macros.html" import static %}
+
+{% block profile_head %}
+    <link rel="stylesheet" href="{{ static('front/css/front_profile_posts.css') }}">
+{% endblock %}
+
+
+{% block u_posts %}
+    active
+{% endblock %}
+
+
+{% block posts %}
+    active
+{% endblock %}
+
+
+{% block right_content %}
+    <div class="theme-nav">
+    {% if user == g.front_user %}
+        {% if posts %}
+        <a href="{{ url_for('front.profile_posts') }}" class="theme-nav-list current" id="post-btn">帖子</a>
+        {% else %}
+        <a href="{{ url_for('front.profile_posts') }}" class="theme-nav-list" id="post-btn">帖子</a>
+        {% endif %}
+
+        {% if comments %}
+        <a href="{{ url_for('front.profile_posts_r') }}" id="comment-btn" class="theme-nav-list current">回复</a>
+        {% else %}
+        <a href="{{ url_for('front.profile_posts_r') }}" id="comment-btn" class="theme-nav-list">回复</a>
+        {% endif %}
+
+        {% if post_stars %}
+        <a href="{{ url_for('front.profile_posts_s') }}" id="star-btn" class="theme-nav-list current">点赞</a>
+        {% else %}
+        <a href="{{ url_for('front.profile_posts_s') }}" id="star-btn" class="theme-nav-list">点赞</a>
+        {% endif %}
+    {% elif user %}
+        {% if posts %}
+        <a href="{{ url_for('front.user_profile_posts',id=user.id) }}" class="theme-nav-list current" id="post-btn">帖子</a>
+        {% else %}
+        <a href="{{ url_for('front.user_profile_posts',id=user.id) }}" class="theme-nav-list" id="post-btn">帖子</a>
+        {% endif %}
+
+        {% if comments %}
+        <a href="{{ url_for('front.user_profile_comments',id=user.id) }}" id="comment-btn" class="theme-nav-list current">回复</a>
+        {% else %}
+        <a href="{{ url_for('front.user_profile_comments',id=user.id) }}" id="comment-btn" class="theme-nav-list">回复</a>
+        {% endif %}
+
+
+    {% endif %}
+
+    </div>
+
+    {% if posts %}
+    <div class="post-list">
+        <table class="table">
+            <thead>
+                <th class="col-sm-7">标题：</th>
+                <th class="col-sm-1">板块</th>
+                <th class="col-sm-2">回复/查看</th>
+                <th class="col-sm-2">发表时间</th>
+            </thead>
+
+            <tbody>
+            {% for post in posts %}
+                     <tr>
+                        <td><a href="{{ url_for('front.post_detail',post_id=post.id) }}">{{ post.title |simple }}</a></td>
+                        <td>{{post.board.name}}</td>
+                        <td>{{ post.comments | length }}/{{post.read_count}}</td>
+                        <td>{{ post.create_time }}</td>
+                     </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+         <div style="text-align:center;">
+             {{ pagination.links }}
+         </div>
+
+    </div>
+    {% endif %}
+    {% if comments %}
+    <div class="comment-list" >
+        <table class="table">
+            <thead>
+                <th class="col-sm-8">评论</th>
+                <th class="col-sm-2">板块</th>
+                <th class="col-sm-2">发表时间</th>
+            </thead>
+            <tbody>
+                {% for comment in comments %}
+                    <tr>
+                        <td>
+                            <p><a href="{{ url_for('front.post_detail',post_id=comment.post.id) }}#{{ comment.id}}">{{ comment.content |simple }}</a></p>
+                            <p class="comment-p"></p>
+                        </td>
+                        <td>{{ comment.post.board.name }}</td>
+                        <td>{{ comment.create_time }}</td>
+                    </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="text-align:center;">
+             {{ pagination.links }}
+        </div>
+
+    </div>
+
+    {% endif %}
+    {% if post_stars %}
+    <div class="star-list">
+        <table class="table">
+            <thead>
+                <th class="col-sm-8">帖子</th>
+                <th class="col-sm-2">作者</th>
+                <th class="col-sm-2">点赞时间</th>
+            </thead>
+            <tbody>
+                {% for post_star in post_stars %}
+                    <tr>
+                        <td>
+                            <p><a href="{{ url_for('front.post_detail',post_id=post_star.post_id) }}">{{ post_star.post.title |simple }}</a></p>
+                        </td>
+                        <td>{{ post_star.author.username }}</td>
+                        <td>{{ post_star.create_time }}</td>
+                    </tr>
+
+                {% endfor %}
+            </tbody>
+
+        </table>
+        <div style="text-align:center;">
+            {{ pagination.links }}
+        </div>
+     </div>
+    {% endif %}
+
+
+{% endblock %}

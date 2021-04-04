@@ -1,0 +1,119 @@
+{% extends 'front/front_base.html' %}
+{% from "common/_macros.html" import static %}
+
+{% block title %}
+    {{ post.title }}
+{% endblock %}
+
+{% block head %}
+    <script src="{{ static('ueditor/ueditor.config.js') }}"></script>
+    <script src="{{ static('ueditor/ueditor.all.min.js') }}"></script>
+
+    <link rel="stylesheet" href="{{ static('front/css/front_pdetail.css') }}">
+
+{% endblock %}
+
+{% block body %}
+    <div class="lg-container">
+        <div class="post-container">
+            <h2>{{ post.title }}</h2>
+            <p class="post-info-group">
+                <span>发表时间：{{ post.create_time }}</span>
+                <span>作者：{{ post.author.username }}</span>
+                <span>所属板块：{{ post.board.name }}</span>
+                <span>阅读数：{{ post.read_count }}</span>
+                <span>评论数：{{ post |comment_sum }}</span>
+            </p>
+            <article class="post-content" id="post-content" data-id="{{ post.id }}">
+                {{ post.content|safe }}
+
+
+            </article>
+            {% if not g.front_user  %}
+                <button id="like-btn" class="glyphicon glyphicon-thumbs-up btn btn-danger btn-sm" aria-hidden="true"> 点 赞 {{ star_author_ids|stars }}</button>
+            {% elif g.front_user.id in star_author_ids  %}
+                <button id="like-btn" class="glyphicon glyphicon-thumbs-up btn btn-primary btn-sm" aria-hidden="true">取消点赞 {{ star_author_ids|stars }}</button>
+            {% else %}
+                <button id="like-btn" class="glyphicon glyphicon-thumbs-up btn btn-danger btn-sm" aria-hidden="true"> 点 赞 {{ star_author_ids|stars }}</button>
+            {% endif %}
+        </div>
+        <div class="comment-group">
+            <h3>评论列表</h3>
+            <ul class="comment-list-group" id="ul">
+                {% for comments_info in comments_infos %}
+                    <li class="comment-li">
+                        <div class="itm">
+                            <div class="head">
+                                <img src="{{ comments_info.comment_author_avatar or static('common/images/logo.jpg') }}" alt="">
+                            </div>
+                            <div class="comment-content cntwrap">
+                                <div id="{{ comments_info.comment_id }}" class="cnt f-brk">
+                                    <p class="author-info cnt f-brk">
+                                    <a href="#">{{ comments_info.comment_author_username }}</a>
+                                        {% if comments_info.comment_father_comment_author  %}
+                                            <div class="bbs-post-web-quote-thread">
+                                                <div class="bbs-thread-comp quote-thread">
+                                                    <div class="bbs-thread-comp-container">
+                                                        <div class="quote-text">引用 @<a href="#">{{comments_info.comment_father_comment_author}}</a>发表的：</div>
+                                                        <div class="reply-thread">{{comments_info.comment_father_comment_content | safe}}</div>
+
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endif %}
+                                    {{ comments_info.comment_content|safe }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <div class="time s-fc4 author-info" style="float: left;">{{ comments_info.comment_createtime }} </div>
+                                    <div style="float: right;padding-right: 10px;">
+                                        {% with %}
+                                        {% if g.front_user %}
+                                            {% if g.front_user.id in comments_info.star_author_id %}
+                                                {% set temp = 'True' %}
+                                            {% else %}
+                                                {% set temp = 'False' %}
+                                            {% endif %}
+                                        {% else %}
+                                            {% set temp = 'False' %}
+                                        {% endif %}
+
+                                        <a id="a1" href="javascript:void(0)" statue='{{ temp }}' comment-id="{{ comments_info.comment_id }}" class="s-fc3 like-comment-a">
+                                            <span  class="glyphicon glyphicon-thumbs-up author-info " aria-hidden="true"></span>({{ comments_info.sum_stars }})
+                                        </a>
+                                        {% endwith %}
+
+                                        <span>|</span>
+                                        <a id="a2" href="#addcomment" comment-id="{{ comments_info.comment_id }}" class="author-info reply">回复</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                {% endfor %}
+
+            </ul>
+            <div style="text-align: center">
+                {% if comment_count > 5 %}
+                    <button id="click-more"  index="5" class="btn btn-info btn-block" style="">加载更多</button>
+                {% endif %}
+
+            </div>
+        </div>
+        <div id="addcomment" class="add-comment-group">
+            <h3>发表评论</h3>
+            <script id="editor" type="text/plain" style="height:100px;"></script>
+            <div class="comment-btn-group">
+                <button class="btn btn-primary" id="comment-btn">发表评论</button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="sm-container"></div>
+    <script src="{{ static('front/js/front_pdetail.js') }}"></script>
+
+
+{% endblock %}

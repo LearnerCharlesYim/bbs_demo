@@ -1,0 +1,86 @@
+{% extends 'front/front_profile_base.html' %}
+{% from "common/_macros.html" import static %}
+
+{% block profile_head %}
+    <link rel="stylesheet" href="{{ static('front/css/front_profile_posts.css') }}">
+{% endblock %}
+
+{% block reply %}
+    active
+{% endblock %}
+
+
+{% block right_content %}
+    <div class="theme-nav">
+
+
+        {% if replies %}
+        <a href="{{url_for('front.replies')}}" id="comment-btn" class="theme-nav-list current">评论</a>
+        {% else %}
+        <a href="{{url_for('front.replies')}}" id="comment-btn" class="theme-nav-list">评论</a>
+        {% endif %}
+
+        {% if p_replies %}
+        <a href="{{url_for('front.p_replies')}}" class="theme-nav-list current" id="post-btn">帖子</a>
+        {% else %}
+        <a href="{{url_for('front.p_replies')}}" class="theme-nav-list" id="post-btn">帖子</a>
+        {% endif %}
+
+
+    </div>
+
+    {% if p_replies %}
+    <div class="post-list">
+        <table class="table">
+            <thead>
+                <th class="col-sm-8">评论</th>
+                <th class="col-sm-4">回复时间</th>
+            </thead>
+
+            <tbody>
+            {% for p_reply in p_replies %}
+                    <tr>
+                        <td>
+                            <p><a href="{{url_for('front.post_detail',post_id=p_reply[3])}}#{{ p_reply[0]}}">{{ p_reply[1] |simple }}</a></p>
+                            <p class="comment-p"></p>
+                        </td>
+                        <td>{{ p_reply[2] }}</td>
+                    </tr>
+            {% endfor %}
+
+            </tbody>
+        </table>
+         <div style="text-align:center;">
+             {{ pagination.links }}
+         </div>
+
+    </div>
+    {% endif %}
+    {% if replies %}
+    <div class="comment-list" >
+        <table class="table">
+            <thead>
+                <th class="col-sm-8">评论</th>
+                <th class="col-sm-4">回复时间</th>
+            </thead>
+            <tbody>
+                {% for reply in replies %}
+                    <tr>
+                        <td>
+                            <p><a href="{{url_for('front.post_detail',post_id=reply[3])}}#{{ reply[0]}}">{{ reply[1] |simple }}</a></p>
+                            <p class="comment-p"></p>
+                        </td>
+                        <td>{{ reply[2] }}</td>
+                    </tr>
+
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="text-align:center;">
+             {{ pagination.links }}
+        </div>
+
+    </div>
+    {% endif %}
+
+{% endblock %}

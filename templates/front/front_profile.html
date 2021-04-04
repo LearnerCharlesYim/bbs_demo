@@ -1,0 +1,37 @@
+{% extends 'front/front_profile_base.html' %}
+{% from "common/_macros.html" import static %}
+
+
+{% block u_profile %}
+    active
+{% endblock %}
+
+
+{% block profile %}
+    active
+{% endblock %}
+
+{% block right_content %}
+    <p class="info-title">个人资料</p>
+    <ul class="info-list">
+        {% if user %}
+        <li>用户名：{{ user.username }}</li>
+        <li>邮箱： {{ user.email or '[隐藏]' }}</li>
+        <li>真实姓名：{{ user.realname or '[隐藏]' }}</li>
+        <li>性别：{{user.gender or '[保密]'}}</li>
+        <li>个性签名：{{ user.signature or '这个家伙很懒，没有留下什么~' }}</li>
+        {% endif %}
+
+
+    </ul>
+    <br>
+    <p class="info-title">活跃概括</p>
+    <ul class="info-list">
+        {% if user %}
+        <li>发表帖子数：{{ user.posts | length }}</li>
+        <li>评论数量：{{ user.comments | length }}</li>
+        <li>加入论坛时间：{{ user.join_time }}</li>
+        {% endif %}
+
+    </ul>
+{% endblock %}

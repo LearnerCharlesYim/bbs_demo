@@ -1,0 +1,63 @@
+{% from "common/_macros.html" import static %}
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+{#    <meta name="viewport" content="width=device-width, initial-scale=1">#}
+      <meta name="csrf-token" content="{{ csrf_token()}}">
+    <!-- 上述3个meta标签*必须*放在最前面，任何其他内容都*必须*跟随其后！ -->
+
+
+    <title>CMS管理系统</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+
+    <link href="{{url_for('static',filename='cms/css/signin.css')}}" rel="stylesheet">
+      <link rel="stylesheet" href="{{ static('common/sweetalert/sweetalert.css') }}">
+
+      <script src="http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js"></script>
+
+    <script src="http://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="{{ static("common/zlajax.js") }}"></script>
+
+    <script src="{{ static('common/sweetalert/sweetalert.min.js') }}"></script>
+    <script src="{{ static('common/sweetalert/zlalert.js') }}"></script>
+      <script src="{{ static('cms/js/login.js') }}"></script>
+  </head>
+
+  <body>
+
+    <div class="container">
+
+      <form class="form-signin" method="post">
+
+        <h2 class="form-signin-heading">请登录</h2>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token()}}">
+        <label for="inputEmail" class="sr-only">邮箱</label>
+        <input type="text" id="inputEmail" class="form-control" name='email' placeholder="邮箱" >
+
+          <label for="inputPassword" class="sr-only">密码</label>
+
+        <input type="password" id="inputPassword" class="form-control" name='password' placeholder="密码" >
+
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="remember" value="1"> 记住我
+          </label>
+        </div>
+        <button class="btn btn-lg btn-primary btn-block" type="submit" id="submit">立即登录</button>
+      </form>
+
+    </div> <!-- /container -->
+
+
+    <p style="display:none;color:red;text-align:center;" class="text-danger" id="message-p"></p>
+
+
+
+  </body>
+</html>
