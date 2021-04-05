@@ -94,7 +94,7 @@
                 {% for comment in comments %}
                     <tr>
                         <td>
-                            <p><a href="{{ url_for('front.post_detail',post_id=comment.post.id) }}#{{ comment.id}}">{{ comment.content |simple }}</a></p>
+                            <p><a href="#">{{ comment.content |simple }}</a></p>
                             <p class="comment-p"></p>
                         </td>
                         <td>{{ comment.post.board.name }}</td>

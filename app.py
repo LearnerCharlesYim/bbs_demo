@@ -4,7 +4,7 @@ from apps.common import bp as common_bp
 from apps.front import bp as front_bp
 from apps.ueditor import bp as ueditor_bp
 import config
-from exts import db,mail,alidayu
+from exts import db,mail,alidayu,whooshee
 from flask_wtf import CSRFProtect
 from datetime import datetime
 import re

@@ -1,4 +1,4 @@
-from flask import Blueprint,render_template,views,request,session,url_for,abort,g,redirect
+from flask import Blueprint,render_template,views,request,session,url_for,abort,g,redirect,flash
 from exts import alidayu,db
 from .forms import SignupForm,LoginForm,AddPostForm,AddCommentForm,SettingsForm
 from utils import restful,safeutils
@@ -58,6 +58,7 @@ def index():
         'current_sort': sort
     }
     return render_template('front/front_index.html',**context)
+
 
 @bp.route('/logout/')
 @login_required
@@ -229,8 +230,6 @@ def settings():
             return restful.success()
         else:
             return restful.params_error(form.get_error())
-
-
 
 
 
@@ -506,6 +505,7 @@ def dislike_comment():
         return restful.success(data=data)
 
 
+# 异步加载回复框
 @bp.route('/load_reply/')
 @login_required
 def load_reply():
@@ -520,6 +520,31 @@ def load_reply():
 
     return restful.success(data=data)
 
+#主页搜索
+@bp.route('/search/')
+def index_search():
+    q = request.args.get('q',default='').strip()
+    category = request.args.get('category',default='post')
+    posts = None
+    comments = None
+    users = None
+    if category == 'post':
+        posts = PostModel.query.filter(PostModel.title.contains(f'{q}')).all()
+    elif category =='comment':
+        comments = CommentModel.query.filter(CommentModel.content.contains(f'{q}')).all()
+    elif category =='user':
+        users = FrontUser.query.filter(FrontUser.username.contains(f'{q}')).all()
+
+    context = {
+        'posts':posts,
+        'comments':comments,
+        'users':users,
+        'q':q,
+        'category':category
+    }
+
+
+    return render_template('front/front_search.html',**context)
 
 
 

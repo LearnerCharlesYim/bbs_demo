@@ -24,6 +24,9 @@ class FrontUser(db.Model):
     gender = db.Column(db.Enum(GenderEnum),default=GenderEnum.UNKNOW)
     join_time = db.Column(db.DateTime,default=datetime.now())
 
+    # comments = db.relationship("CommentModel",backref='author',cascade='all')
+
+
     def __init__(self,*args,**kwargs):
         if 'password' in kwargs:
             self.password = kwargs.get('password')

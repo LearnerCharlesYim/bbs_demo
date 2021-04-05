@@ -1,0 +1,73 @@
+{% extends "front/front_base.html" %}
+{% from "common/_macros.html" import static %}
+{% block title %}搜索结果{% endblock %}
+
+{% block head %}
+    <style>
+    .post-group{
+        border: 1px solid #ddd;
+        margin-top: 20px;
+        overflow: hidden;
+        border-radius: 5px;
+        padding: 10px;
+        float: right;
+        width: 700px;
+
+        }
+
+    .post-list-group{
+        margin-top: 20px;
+        }
+
+    .post-list-group li{
+    overflow: hidden;
+    padding-bottom: 20px;
+    }
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+<div class="page-header">
+    <h1>搜索: {{ q }}</h1>
+</div>
+    <div class="list-group"  style="width:250px;float: left">
+      <a href="{{ url_for('front.index_search',q=q,category='post') }}" class="list-group-item {% if category == 'post' %}active{% endif %}">帖子</a>
+      <a href="{{url_for('front.index_search',q=q,category='comment')}}" class="list-group-item {% if category == 'comment' %}active{% endif %}">评论</a>
+      <a href="{{url_for("front.index_search",q=q,category='user')}}" class="list-group-item {% if category == 'user' %}active{% endif %}">用户</a>
+    </div>
+
+    <div class="post-group">
+        <ul class="post-list-group">
+        {% if posts %}
+            <h3>结果：{{ posts | length }}</h3>
+            {% for post in posts %}
+                <li>
+                <a href="{{ url_for('front.post_detail',post_id=post.id) }}">{{ post.title |simple}}</a>
+                </li>
+            {% endfor %}
+
+          {% elif comments %}
+             <h3>结果：{{ comments | length }}</h3>
+            {% for comment in comments %}
+                <li>
+                <a href="{{ url_for('front.post_detail',post_id=comment.post.id) }}">{{ comment.content | simple }}</a><div style="float: right">作者: <a href="{{ url_for('front.user_profile',id=comment.author.id) }}">{{ comment.author.username }}</a></div>
+                </li>
+            {% endfor %}
+            {% elif users %}
+             <h3>结果：{{ users | length }}</h3>
+
+            {% for user in users %}
+                <li>
+                <img width="20" height="20" style="border-radius:10px" src="{{ user.avatar or static('common/images/logo.jpg') }}" alt=""><a href="{{ url_for('front.user_profile',id=user.id) }}">{{ user.username }}</a>
+                </li>
+            {% endfor %}
+             </ul>
+            {% else %}
+            <h5 class="tip">抱歉，没有找到结果</h5>
+        {% endif %}
+
+    </div>
+
+{% endblock %}
