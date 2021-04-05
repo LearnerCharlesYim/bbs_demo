@@ -46,3 +46,8 @@ class UpdateBoardForm(BaseForm):
 
 class DeleteBoardForm(BaseForm):
     board_id = IntegerField(validators=[InputRequired(message='请输入板块id!')])
+
+class AddCMSUser(BaseForm):
+    email = StringField(validators=[InputRequired(message='请输入邮箱！'),Email(message='请输入正确邮箱格式！')])
+    username = StringField(validators=[InputRequired(message='请输入用户名')])
+    password = StringField(validators=[InputRequired(message='请输入密码！')])

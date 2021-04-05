@@ -602,11 +602,15 @@ class LoginView(views.MethodView):
             password = form.password.data
             remember = form.remember.data
             user = FrontUser.query.filter_by(telephone=telephone).first()
+
             if user and user.check_password(password):
-                session[config.FRONT_USER_ID] = user.id
-                if remember:
-                    session.permanent = True
-                return restful.success()
+                if user.status:
+                    session[config.FRONT_USER_ID] = user.id
+                    if remember:
+                        session.permanent = True
+                    return restful.success()
+                else:
+                    return restful.params_error(message='您已被禁用此账号，请联系管理员！')
             else:
                 return restful.params_error(message='手机号或密码错误！')
         else:

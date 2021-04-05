@@ -1,0 +1,52 @@
+{% extends 'cms/cms_base.html' %}
+{% from "common/_macros.html" import static %}
+{% block head %}
+    <script src="{{ static("cms/js/editcmsuser.js") }}"></script>
+{% endblock %}
+
+{% block title %}
+    修改CMS用户
+{% endblock %}
+
+{% block page_title %}
+    {{ self.title() }}
+{% endblock %}
+
+{% block main_content %}
+    <form action="" method="post" class="form-min" style="width:300px;">
+        <div class="form-group">
+            <label>用户名：</label>
+            <input type="text" class="form-control" name="username" value="{{ user.username }}" readonly>
+        </div>
+        <div class="form-group">
+            <label>邮箱：</label>
+            <input type="email" class="form-control" name="email" value="{{ user.email }}" readonly>
+        </div>
+        <div class="checkbox">
+            {% for role in roles %}
+                {% if role.id != 4 %}
+                <label>
+                    {% if role in user.roles %}
+                        <input type="checkbox" checked value="{{ role.id }}">{{ role.name }}
+                    {% else %}
+                        <input type="checkbox" value="{{ role.id }}">{{ role.name }}
+                    {% endif %}
+                </label>
+                {% endif %}
+
+            {% endfor %}
+        </div>
+        <div class="form-group">
+            {% if user.status %}
+                <button class="btn btn-danger" id="black-list-btn" data-user-id="{{ user.id }}" data-is-active="1">加入黑名单</button>
+            {% else %}
+                <button class="btn btn-warning" id="black-list-btn" data-user-id="{{ user.id }}" data-is-active="0">移出黑名单</button>
+            {% endif %}
+        </div>
+        <div class="form-group">
+            {% if user.status %}
+            <button class="btn btn-primary" id="submit" data-user-id="{{ user.id }}">立即修改</button>
+            {% endif %}
+        </div>
+    </form>
+{% endblock %}

@@ -9,18 +9,18 @@
 {% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" href="{{ static('cms/css/cms_cmsusers.css') }}">
+
 {% endblock %}
 
 {% block main_content %}
     <div class="top-box">
-        <a href="#" class="btn btn-warning" style="float: right;">添加管理员</a>
+        <a href="{{ url_for('cms.add_cuser') }}" class="btn btn-warning" style="float: right;">添加管理员</a>
     </div>
     <table class="table table-bordered">
         <thead>
             <th>用户名</th>
             <th>加入时间</th>
-            <th>分组</th>
+            <th>角色分组</th>
             <th>状态</th>
             <th>操作</th>
         </thead>
@@ -32,11 +32,11 @@
                     <td>
                         {% for role in user.roles %}
                             {{ role.name }}
-                            {% if not loop.last %}，{% endif %}
+                            {% if not loop.last %}  {% endif %}
                         {% endfor %}
                     </td>
                     <td>
-                            {% if not user.is_active %}
+                            {% if user.status %}
                                 <span class="label label-success">可用</span>
                             {% else %}
                                 <span class="label label-danger">已拉黑</span>
@@ -44,7 +44,7 @@
                     </td>
                     <td>
                         {% if user.id != g.cms_user.id %}
-                            <a href="#" class="btn btn-primary btn-xs">编辑</a>
+                            <a href="{{ url_for('cms.cuser_detail',id=user.id) }}" class="btn btn-primary btn-xs">编辑</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -52,4 +52,7 @@
 
         </tbody>
     </table>
+    <div style="text-align: center">
+    {{ pagination.links }}
+    </div>
 {% endblock %}

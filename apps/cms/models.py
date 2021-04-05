@@ -2,10 +2,11 @@ from exts import db
 from datetime import datetime
 from werkzeug.security import generate_password_hash,check_password_hash
 
+#权限
 class CMSPermission(object):
     #255二进制表示 1111 1111
     ALL_PERMISSION = 0b11111111
-    #1.访问者权限
+    #1.访问者(无权限)
     VISITOR        = 0b00000001
     #2.管理帖子
     POSTER         = 0b00000010
@@ -19,6 +20,7 @@ class CMSPermission(object):
     CMSUSER        = 0b00100000
     #7.超级管理员
     ADMINER        = 0b01000000
+
 
 cms_role_user = db.Table(
     'cms_role_user',
@@ -46,6 +48,8 @@ class CMSUser(db.Model):
     _password = db.Column(db.String(100),nullable=False)
     email = db.Column(db.String(100),nullable=False)
     join_time = db.Column(db.DateTime,default=datetime.now())
+    status = db.Column(db.Boolean,default=True)
+
 
     def __init__(self,username,password,email):
         self.username = username
@@ -77,7 +81,7 @@ class CMSUser(db.Model):
 
     def has_permission(self,permission):
         all_permissions = self.permissions
-        result = all_permissions&permission == permission
+        result = all_permissions & permission == permission
         return result
 
     def is_developer(self):

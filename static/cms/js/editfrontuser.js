@@ -1,33 +1,32 @@
 
 $(function () {
-    $('#back-list-btn').click(function (event) {
+    $('#black-btn').click(function (event) {
         event.preventDefault();
 
-        var is_active = parseInt($(this).attr('data-is-active'));
+        var status = parseInt($(this).attr('user-status'));
         var user_id = $(this).attr('data-user-id');
 
-        var is_black = is_active;
 
-        xtajax.post({
-            'url': '/black_front_user/',
+        zlajax.post({
+            'url': '/cms/black_front_user/',
             'data': {
                 'user_id': user_id,
-                'is_black': is_black
+                'user_status': status
             },
             'success': function (data) {
                 if(data['code'] == 200){
                     var msg = '';
-                    if(is_black){
+                    if(status){
                         msg = '恭喜！已经将该用户加入黑名单！';
                     }else{
                         msg = '恭喜！已经将该用户移出黑名单！';
                     }
-                    xtalert.alertSuccessToast(msg);
+                    zlalert.alertSuccessToast(msg);
                     setTimeout(function () {
                         window.location.reload();
                     },500);
                 }else{
-                    xtalert.alertInfoToast(data['message']);
+                    zlalert.alertInfoToast(data['message']);
                 }
             }
         })

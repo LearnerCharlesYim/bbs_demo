@@ -9,11 +9,11 @@
 {% endblock %}
 
 {% block head %}
-    <script src="{{ static('cms/js/cms_addcmsuser.js') }}"></script>
+    <script src="{{ static('cms/js/addcmsuser.js') }}"></script>
 {% endblock %}
 
 {% block main_content %}
-    <form action="" method="post" class="form-min">
+    <form action="" method="post" class="form-min"  style="width:300px;">
         <div class="form-group">
             <label>邮箱：</label>
             <input type="email" class="form-control" name="email" placeholder="邮箱">
@@ -28,13 +28,17 @@
         </div>
         <div class="checkbox">
             {% for role in roles %}
+                {% if role.id != 4 %}
                 <label>
                     <input type="checkbox" name="roles" value="{{ role.id }}">{{ role.name }}
                 </label>
+                {% endif %}
+
             {% endfor %}
         </div>
         <div class="form-group">
             <button class="btn btn-primary" id="submit">立即添加</button>
+            <a href="{{ url_for('cms.cusers') }}" class="btn btn-danger" id="submit">返回</a>
         </div>
     </form>
 {% endblock %}

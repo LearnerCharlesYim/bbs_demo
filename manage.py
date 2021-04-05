@@ -39,7 +39,7 @@ def create_role():
     admin = CMSRole(name='管理员',desc='拥有系统所有权限。')
     admin.permissions = CMSPermission.VISITOR|CMSPermission.COMMENTER|CMSPermission.POSTER|CMSPermission.FRONTUSER|CMSPermission.CMSUSER|CMSPermission.BOARDER
     #开发者
-    developer = CMSRole(name='开发者',desc='开发人员专用角色。')
+    developer = CMSRole(name='超级管理员',desc='开发人员专用角色。')
     developer.permissions = CMSPermission.ALL_PERMISSION
 
     db.session.add_all([visitor,operator,admin,developer])

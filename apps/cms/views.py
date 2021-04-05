@@ -1,6 +1,6 @@
 from flask import Blueprint,views,render_template,request,session,redirect,url_for,g
-from .forms import LoginForm,ResetForm,ResetEmailForm,AddBannerForm,UpdateBannerForm,AddBoardForm,UpdateBoardForm,DeleteBoardForm
-from .models import CMSUser,CMSPermission
+from .forms import LoginForm,ResetForm,ResetEmailForm,AddBannerForm,UpdateBannerForm,AddBoardForm,UpdateBoardForm,DeleteBoardForm,AddCMSUser
+from .models import CMSUser,CMSPermission,CMSRole
 from .decorators import login_required,permission_required
 import config
 from exts import db,mail
@@ -212,6 +212,26 @@ def fuser_edit(id):
         return render_template('cms/cms_edit_fusers.html',front_user=front_user)
 
 
+@bp.route('/black_front_user/',methods=['GET','POST'])
+@login_required
+@permission_required(CMSPermission.FRONTUSER)
+def black_front_user():
+    user_id = request.form.get('user_id')
+    user_status = request.form.get('user_status')
+    user = FrontUser.query.get(user_id)
+    if user:
+        if int(user_status):
+            user.status = False
+            db.session.commit()
+            return restful.success()
+        else:
+            user.status = True
+            db.session.commit()
+            return restful.success()
+    else:
+        return restful.params_error('没有这个用户！')
+
+
 @bp.route('/cusers/')
 @login_required
 @permission_required(CMSPermission.CMSUSER)
@@ -226,7 +246,83 @@ def cusers():
         'pagination': pagination
     }
 
+
     return render_template('cms/cms_cmsusers.html',**context)
+
+
+@bp.route('/cusers/<id>')
+@login_required
+@permission_required(CMSPermission.CMSUSER)
+def cuser_detail(id):
+    user = CMSUser.query.get(id)
+    roles = CMSRole.query.all()
+    return render_template('cms/cms_editcmsuser.html',user=user,roles=roles)
+
+
+@bp.route('/cusers/edit/',methods=['POST'])
+@login_required
+@permission_required(CMSPermission.CMSUSER)
+def edit_cuser():
+    user_id = request.form.get('user_id')
+    roles = request.values.getlist('roles[]')
+    user = CMSUser.query.get(user_id)
+    if user:
+        user.roles = []
+        for item in roles:
+            role = CMSRole.query.filter_by(id=int(item)).first()
+            role.users.append(user)
+            # user.roles.append(role)
+        print(user.roles)
+        db.session.commit()
+        return restful.success()
+    else:
+        return restful.params_error('没有此用户！')
+
+
+@bp.route('/cuser/add/',methods=['GET','POST'])
+@login_required
+@permission_required(CMSPermission.CMSUSER)
+def add_cuser():
+    if request.method == 'GET':
+        roles = CMSRole.query.all()
+        return render_template('cms/cms_addcmsuser.html',roles=roles)
+    else:
+        form = AddCMSUser(request.form)
+        if form.validate():
+            email = form.email.data
+            username = form.username.data
+            password = form.password.data
+            roles = request.values.getlist('roles[]')
+            user = CMSUser(email=email,username=username,password=password)
+            db.session.add(user)
+            if roles:
+                for item in roles:
+                    role = CMSRole.query.filter_by(id=int(item)).first()
+                    user.roles.append(role)
+            db.session.commit()
+            return restful.success()
+        else:
+            return restful.params_error(form.get_error())
+
+
+@bp.route('/cusers/black_cuser/',methods=['GET','POST'])
+@login_required
+@permission_required(CMSPermission.CMSUSER)
+def black_cuser():
+    user_id = request.form.get('user_id')
+    status = request.form.get('status')
+    user = CMSUser.query.get(user_id)
+    if user:
+        if int(status):
+            user.status = False
+            db.session.commit()
+            return restful.success()
+        else:
+            user.status = True
+            db.session.commit()
+            return restful.success()
+    else:
+        return restful.params_error('没有这个用户！')
 
 
 

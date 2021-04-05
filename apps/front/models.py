@@ -23,6 +23,8 @@ class FrontUser(db.Model):
     signature = db.Column(db.String(100))
     gender = db.Column(db.Enum(GenderEnum),default=GenderEnum.UNKNOW)
     join_time = db.Column(db.DateTime,default=datetime.now())
+    status = db.Column(db.Boolean,default=True)
+
 
     # comments = db.relationship("CommentModel",backref='author',cascade='all')
 
