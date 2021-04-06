@@ -24,7 +24,7 @@
         </div>
         <div class="checkbox">
             {% for role in roles %}
-                {% if role.id != 4 %}
+                {% if role.permissions != CMSPermission.ALL_PERMISSION %}
                 <label>
                     {% if role in user.roles %}
                         <input type="checkbox" checked value="{{ role.id }}">{{ role.name }}

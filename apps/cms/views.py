@@ -1,5 +1,5 @@
 from flask import Blueprint,views,render_template,request,session,redirect,url_for,g
-from .forms import LoginForm,ResetForm,ResetEmailForm,AddBannerForm,UpdateBannerForm,AddBoardForm,UpdateBoardForm,DeleteBoardForm,AddCMSUser
+from .forms import LoginForm,ResetForm,ResetEmailForm,AddBannerForm,UpdateBannerForm,AddBoardForm,UpdateBoardForm,DeleteBoardForm,AddCMSUser,RoleForm
 from .models import CMSUser,CMSPermission,CMSRole
 from .decorators import login_required,permission_required
 import config
@@ -11,6 +11,7 @@ from ..models import BannerModel,BoardModel,PostModel,HighlightPostModel,PostSta
 from flask_paginate import get_page_parameter,Pagination
 from apps.front.models import FrontUser
 from sqlalchemy.sql import func
+from functools import reduce
 
 bp = Blueprint("cms",__name__,url_prefix='/cms')
 
@@ -326,11 +327,63 @@ def black_cuser():
 
 
 
-@bp.route('/croles/')
+@bp.route('/croles/',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.ALL_PERMISSION)
 def croles():
-    return render_template('cms/cms_roles.html')
+    if request.method =='GET':
+        roles = CMSRole.query.order_by(CMSRole.permissions.desc()).all()
+        return render_template('cms/cms_roles.html',roles=roles)
+    else:
+        form = RoleForm(request.form)
+        if form.validate():
+            name = form.name.data
+            desc = form.desc.data
+            permissions = request.values.getlist('permissions[]')
+            results = map(int,permissions)
+            permissions = reduce(lambda x,y:x+y,results)
+            role = CMSRole(name=name, desc=desc,permissions=permissions)
+            db.session.add(role)
+            db.session.commit()
+            return restful.success()
+        else:
+            return restful.params_error(form.get_error())
+
+@bp.route('/roles/edit',methods=['GET','POST'])
+@login_required
+@permission_required(CMSPermission.ALL_PERMISSION)
+def roles_edit():
+    form = RoleForm(request.form)
+    if form.validate():
+        name = form.name.data
+        desc = form.desc.data
+        id = request.form.get('id')
+        permissions = request.values.getlist('permissions[]')
+        results = map(int,permissions)
+        permissions = reduce(lambda x,y:x+y,results)
+        role = CMSRole.query.get(id)
+        if role:
+            role.name = name
+            role.desc = desc
+            role.permissions = permissions
+            db.session.commit()
+            return restful.success()
+        else:
+            return restful.params_error(message='没有这个角色!')
+    else:
+        return restful.params_error(form.get_error())
+
+
+@bp.route('/croles/delete/',methods=['GET','POST'])
+@login_required
+@permission_required(CMSPermission.ALL_PERMISSION)
+def crole_delete():
+    role_id = request.form.get('role_id')
+    role = CMSRole.query.get(role_id)
+    db.session.delete(role)
+    db.session.commit()
+
+    return restful.success()
 
 
 @bp.route('/banners/')
@@ -465,12 +518,14 @@ class LoginView(views.MethodView):
             remember = form.remember.data
             user = CMSUser.query.filter_by(email=email).first()
             if user and user.check_password(password):
-                session[config.CMS_USER_ID] = user.id
-                if remember:
-                    #默认过期时间31天
-                    session.permanent = True
-                # return redirect(url_for('cms.index'))
-                return restful.success()
+                if user.status:
+                    session[config.CMS_USER_ID] = user.id
+                    if remember:
+                        #默认过期时间31天
+                        session.permanent = True
+                    return restful.success()
+                else:
+                    return restful.params_error(message='您已被禁止登入，请于管理员联系！')
             else:
                 return restful.params_error(message='邮箱或密码错误')
         else:

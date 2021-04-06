@@ -529,7 +529,7 @@ def index_search():
     comments = None
     users = None
     if category == 'post':
-        posts = PostModel.query.filter(PostModel.title.contains(f'{q}')).all()
+        posts = PostModel.query.filter(db.or_(PostModel.title.contains(f'{q}'),PostModel.content.contains(f'{q}'))).all()
     elif category =='comment':
         comments = CommentModel.query.filter(CommentModel.content.contains(f'{q}')).all()
     elif category =='user':
@@ -542,10 +542,7 @@ def index_search():
         'q':q,
         'category':category
     }
-
-
     return render_template('front/front_search.html',**context)
-
 
 
 # @bp.route('/sms_captcha/')
@@ -559,7 +556,6 @@ def index_search():
 class SignupView(views.MethodView):
     def get(self):
         return render_template('front/front_signup.html')
-
 
     def post(self):
         form = SignupForm(request.form)
@@ -583,6 +579,7 @@ class SignupView(views.MethodView):
         else:
             print(form.get_error())
             return restful.params_error(message=form.get_error())
+
 
 class LoginView(views.MethodView):
     def get(self):

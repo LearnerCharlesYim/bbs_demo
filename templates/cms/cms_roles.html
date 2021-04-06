@@ -1,17 +1,99 @@
 {% extends 'cms/cms_base.html' %}
 {% from "common/_macros.html" import static %}
-
-{% block title -%}
-    CMS用户角色管理
-{%- endblock %}
-
-{% block page_title -%}
-    {{ self.title() }}
-{%- endblock %}
-
 {% block head %}
+    <script src="{{ static('cms/js/roles.js')}}"></script>
+    <style>
+        .top-box a{
+            float: right;
+        }
+    </style>
+{% endblock %}
+
+{% block title %}CMS组角色管理{% endblock %}
+
+{% block page_title %}
+    {{ self.title() }}
 {% endblock %}
 
 {% block main_content %}
-    CMS用户角色管理页面
+    <div class="top-box">
+        <button id="new-group-btn" style="float: right;" class="btn btn-warning"data-toggle="modal" data-target="#role-dialog">添加新组</button>
+    </div>
+    <table class="table table-bordered">
+        <thead>
+            <th class="col-sm-1">组名</th>
+            <th class="col-sm-4">描述</th>
+            <th class="col-sm-4">权限</th>
+            <th class="col-sm-1">用户数</th>
+            <th class="col-sm-2">操作</th>
+        </thead>
+        <tbody>
+            {% for role in roles %}
+                <tr role-name="{{ role.name }}" role-desc="{{ role.desc }}" role.permissions="{{ role.permission_dicts }}">
+                    <td>{{ role.name }}</td>
+                    <td>{{ role.desc }}</td>
+                    <td>
+                        {% for permission_dict in role.permission_dicts %}
+                        {{ permission_dict.popitem()[1] }}
+                        {% if not loop.last %} 、 {% endif %}
+                    {% endfor %}
+                    </td>
+                    <td>{{ role.users|length }}</td>
+                    <td>
+                        {% if role.permissions != CMSPermission.ALL_PERMISSION %}
+                         <button class="btn btn-primary btn-xs edit-role-btn" data-role-id="{{ role.id }}">编辑</button>
+                        <button class="btn btn-danger btn-xs delete-role-btn" data-role-id="{{ role.id }}">删除</button>
+
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+<!-- Modal -->
+<div class="modal fade" id="role-dialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">CMS用户组</h4>
+      </div>
+      <div class="modal-body">
+           <form action="" method="POST">
+                <div class="form-min">
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">组名</span>
+                            <input name="name" type="text" class="form-control" />
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <span class="input-group-addon">描述</span>
+                            <input type="text" name="desc" class="form-control">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        {% for permission,permission_info in CMSPermission.PERMISSION_MAP.items() %}
+                            {% if permission != CMSPermission.ALL_PERMISSION %}
+                                <input type="checkbox" name="permission" value="{{ permission }}">{{ permission_info }}
+                            {% endif %}
+
+                        {% endfor %}
+
+                    </div>
+                </div>
+            </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal" id="close-btn">关闭</button>
+
+        <button class="btn btn-primary" type="submit" id="submit-btn">添加</button>
+        <button class="btn btn-primary" type="submit" id="edit-btn">保存</button>
+
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
