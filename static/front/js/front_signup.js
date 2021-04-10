@@ -49,6 +49,7 @@ $(function () {
     });
 });
 
+
 //提交注册数据
 $(function(){
     $("#submit-btn").click(function(event){

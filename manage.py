@@ -95,6 +95,5 @@ def create_test_post():
     print('恭喜！测试帖子添加成功！')
 
 
-
 if __name__ == '__main__':
     manager.run()

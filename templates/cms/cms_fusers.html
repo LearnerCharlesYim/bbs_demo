@@ -21,6 +21,10 @@
                 <option value="2" {% if c_sort == 2 %}selected{% endif %}>按发表帖子数排序</option>
                 <option value="3" {% if c_sort == 3 %}selected{% endif %}>按评论数排序</option>
             </select>
+            <div class="search-filter-group" style="float: right">
+                <input type="text" placeholder="请输入用户名关键字">
+                <button class="btn btn-primary btn-sm">搜索</button>
+            </div>
         </div>
     </div>
     <table class="table table-bordered">

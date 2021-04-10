@@ -4,6 +4,7 @@ from ..forms import BaseForm
 from utils import zlcache
 from wtforms import ValidationError
 from flask import g
+from .models import CMSRole
 
 
 class LoginForm(BaseForm):
@@ -52,6 +53,13 @@ class AddCMSUser(BaseForm):
     username = StringField(validators=[InputRequired(message='请输入用户名')])
     password = StringField(validators=[InputRequired(message='请输入密码！')])
 
-class RoleForm(BaseForm):
+
+class EditRoleForm(BaseForm):
     name = StringField(validators=[InputRequired(message='请输入组名！')])
     desc = StringField(validators=[InputRequired(message='请输入描述信息！')])
+
+class AddRoleForm(EditRoleForm):
+    def validate_name(self,field):
+        name = field.data
+        if CMSRole.query.filter_by(name=name).first():
+            raise ValidationError(message='该CMS用户组名称已存在！')

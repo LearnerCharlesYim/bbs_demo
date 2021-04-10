@@ -25,6 +25,7 @@ bp = Blueprint("common",__name__,url_prefix='/c')
 #         # return restful.params_error(message='短信验证码发送失败！')
 #         return restful.success()
 
+
 #阿里云短信服务接口
 @bp.route('/sms_captcha/',methods=['POST'])
 def sms_captcha():

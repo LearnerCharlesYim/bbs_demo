@@ -1,5 +1,5 @@
 from flask import Blueprint,views,render_template,request,session,redirect,url_for,g
-from .forms import LoginForm,ResetForm,ResetEmailForm,AddBannerForm,UpdateBannerForm,AddBoardForm,UpdateBoardForm,DeleteBoardForm,AddCMSUser,RoleForm
+from .forms import LoginForm,ResetForm,ResetEmailForm,AddBannerForm,UpdateBannerForm,AddBoardForm,UpdateBoardForm,DeleteBoardForm,AddCMSUser,AddRoleForm,EditRoleForm
 from .models import CMSUser,CMSPermission,CMSRole
 from .decorators import login_required,permission_required
 import config
@@ -7,7 +7,7 @@ from exts import db,mail
 from utils import restful,zlcache
 from flask_mail import Message
 import string,random,re
-from ..models import BannerModel,BoardModel,PostModel,HighlightPostModel,PostStarModel,CommentModel
+from ..models import BannerModel,BoardModel,PostModel,HighlightPostModel,PostStarModel,CommentModel,CommentStarModel
 from flask_paginate import get_page_parameter,Pagination
 from apps.front.models import FrontUser
 from sqlalchemy.sql import func
@@ -121,6 +121,7 @@ def hpost():
     return restful.success()
 
 
+#删帖
 @bp.route('/dpost/',methods=['POST'])
 @login_required
 @permission_required(CMSPermission.POSTER)
@@ -154,14 +155,66 @@ def uhpost():
     db.session.commit()
     return restful.success()
 
-
+#评论
 @bp.route('/comments/')
 @login_required
 @permission_required(CMSPermission.COMMENTER)
 def comments():
-    return render_template('cms/cms_comments.html')
+    sort = request.args.get('sort', type=int, default=1)
+    page = request.args.get(get_page_parameter(), type=int, default=1)
+    start = (page - 1) * config.PER_PAGE
+    end = start + config.PER_PAGE
+    query_obj = None
+    if sort == 1:
+        query_obj = CommentModel.query.order_by(CommentModel.create_time.desc())
+    elif sort == 2:
+        query_obj = db.session.query(CommentModel).outerjoin(CommentStarModel).group_by(CommentModel.id).order_by(func.count(CommentStarModel.id).desc(),CommentModel.create_time.desc())
+
+    start = (page - 1) * config.PER_PAGE
+    total = query_obj.count()
+    comments = query_obj.slice(start, end)
+    pagination = Pagination(bs_version=3, page=page, total=total, outer_window=0, inner_window=2)
+    context = {
+        'comments': comments,
+        'pagination': pagination,
+        'c_sort':sort
+    }
+    return render_template('cms/cms_comments.html', **context)
 
 
+#删除评论
+@bp.route('/dcomment/',methods=['POST'])
+@login_required
+@permission_required(CMSPermission.COMMENTER)
+def dcomment():
+    comment_id = request.form.get('comment_id')
+    comment = CommentModel.query.get(comment_id)
+    if comment:
+        db.session.delete(comment)
+        db.session.commit()
+        return restful.success()
+    else:
+        return restful.params_error(message='没有此评论！')
+
+#搜索评论
+@bp.route('/comments/search/')
+@login_required
+@permission_required(CMSPermission.COMMENTER)
+def search_c():
+    kw = request.args.get('kw',default='').strip()
+    print(kw)
+    comments = CommentModel.query.filter(CommentModel.content.contains(f'{kw}')).order_by(CommentModel.create_time.desc()).all()
+    users = FrontUser.query.filter(FrontUser.username.contains(f'{kw}')).order_by(FrontUser.join_time.desc()).all()
+
+    context = {
+        'comments':comments,
+        'users':users,
+        'kw':kw
+    }
+    return render_template('cms/cms_search_comments.html',**context)
+
+
+#板块信息
 @bp.route('/boards/')
 @login_required
 @permission_required(CMSPermission.BOARDER)
@@ -173,6 +226,7 @@ def boards():
     return render_template('cms/cms_boards.html',**context)
 
 
+#前台用户列表
 @bp.route('/fusers/')
 @login_required
 @permission_required(CMSPermission.FRONTUSER)
@@ -189,10 +243,7 @@ def fusers():
 
     elif sort ==3:
         query_obj = db.session.query(FrontUser).outerjoin(CommentModel).group_by(FrontUser.id).order_by(func.count(CommentModel.id).desc(),FrontUser.join_time.desc())
-
-    page = request.args.get(get_page_parameter(), type=int, default=1)
     start = (page - 1) * config.PER_PAGE
-
     total = query_obj.count()
     front_users = query_obj.slice(start, end)
     pagination = Pagination(bs_version=3, page=page, total=total, outer_window=0, inner_window=2)
@@ -204,6 +255,7 @@ def fusers():
     return render_template('cms/cms_fusers.html', **context)
 
 
+#操作前台用户
 @bp.route('/fusers/edit/<id>',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.FRONTUSER)
@@ -213,6 +265,7 @@ def fuser_edit(id):
         return render_template('cms/cms_edit_fusers.html',front_user=front_user)
 
 
+#拉黑前台用户
 @bp.route('/black_front_user/',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.FRONTUSER)
@@ -233,6 +286,7 @@ def black_front_user():
         return restful.params_error('没有这个用户！')
 
 
+#后台用户列表
 @bp.route('/cusers/')
 @login_required
 @permission_required(CMSPermission.CMSUSER)
@@ -251,6 +305,7 @@ def cusers():
     return render_template('cms/cms_cmsusers.html',**context)
 
 
+#后台用户详细页面
 @bp.route('/cusers/<id>')
 @login_required
 @permission_required(CMSPermission.CMSUSER)
@@ -260,6 +315,7 @@ def cuser_detail(id):
     return render_template('cms/cms_editcmsuser.html',user=user,roles=roles)
 
 
+#修改后台用户信息权限
 @bp.route('/cusers/edit/',methods=['POST'])
 @login_required
 @permission_required(CMSPermission.CMSUSER)
@@ -280,6 +336,7 @@ def edit_cuser():
         return restful.params_error('没有此用户！')
 
 
+#新增后台管理用户
 @bp.route('/cuser/add/',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.CMSUSER)
@@ -306,6 +363,7 @@ def add_cuser():
             return restful.params_error(form.get_error())
 
 
+#拉黑后台用户
 @bp.route('/cusers/black_cuser/',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.CMSUSER)
@@ -326,7 +384,7 @@ def black_cuser():
         return restful.params_error('没有这个用户！')
 
 
-
+#新增角色用户组
 @bp.route('/croles/',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.ALL_PERMISSION)
@@ -335,45 +393,53 @@ def croles():
         roles = CMSRole.query.order_by(CMSRole.permissions.desc()).all()
         return render_template('cms/cms_roles.html',roles=roles)
     else:
-        form = RoleForm(request.form)
+        form = AddRoleForm(request.form)
         if form.validate():
             name = form.name.data
             desc = form.desc.data
             permissions = request.values.getlist('permissions[]')
-            results = map(int,permissions)
-            permissions = reduce(lambda x,y:x+y,results)
-            role = CMSRole(name=name, desc=desc,permissions=permissions)
-            db.session.add(role)
-            db.session.commit()
-            return restful.success()
+            if permissions:
+                results = map(int, permissions)
+                permissions = reduce(lambda x, y: x + y, results)
+                role = CMSRole(name=name, desc=desc, permissions=permissions)
+                db.session.add(role)
+                db.session.commit()
+                return restful.success()
+            else:
+                return restful.params_error(message='请至少选择一项权限！')
         else:
             return restful.params_error(form.get_error())
 
+#修改角色用户组
 @bp.route('/roles/edit',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.ALL_PERMISSION)
 def roles_edit():
-    form = RoleForm(request.form)
+    form = EditRoleForm(request.form)
     if form.validate():
         name = form.name.data
         desc = form.desc.data
         id = request.form.get('id')
         permissions = request.values.getlist('permissions[]')
-        results = map(int,permissions)
-        permissions = reduce(lambda x,y:x+y,results)
-        role = CMSRole.query.get(id)
-        if role:
-            role.name = name
-            role.desc = desc
-            role.permissions = permissions
-            db.session.commit()
-            return restful.success()
+        if permissions:
+            results = map(int, permissions)
+            permissions = reduce(lambda x, y: x + y, results)
+            role = CMSRole.query.get(id)
+            if role:
+                role.name = name
+                role.desc = desc
+                role.permissions = permissions
+                db.session.commit()
+                return restful.success()
+            else:
+                return restful.params_error(message='没有这个角色!')
         else:
-            return restful.params_error(message='没有这个角色!')
+            return restful.params_error(message='请至少选择一项权限')
     else:
-        return restful.params_error(form.get_error())
+        return restful.params_error(message=form.get_error())
 
 
+#删除角色用户组
 @bp.route('/croles/delete/',methods=['GET','POST'])
 @login_required
 @permission_required(CMSPermission.ALL_PERMISSION)
@@ -449,6 +515,7 @@ def dbanner():
     db.session.commit()
     return restful.success()
 
+
 #新增板块
 @bp.route('/aboard/',methods=['POST'])
 @login_required
@@ -463,6 +530,7 @@ def aboard():
         return restful.success()
     else:
         return restful.params_error(message=form.get_error())
+
 
 #修改板块
 @bp.route('/uboard/',methods=['POST'])
@@ -482,6 +550,7 @@ def uboard():
             return restful.params_error(message='没有这个板块！')
     else:
         return restful.params_error(message=form.get_error())
+
 
 #删除板块
 @bp.route('/dboard/',methods=['POST'])
@@ -503,8 +572,6 @@ def dboard():
             return restful.params_error(message='请输入正确板块id')
     else:
         return restful.params_error(message=form.get_error())
-
-
 
 
 class LoginView(views.MethodView):
@@ -530,6 +597,7 @@ class LoginView(views.MethodView):
                 return restful.params_error(message='邮箱或密码错误')
         else:
             return restful.params_error(message=form.get_error())
+
 
 class ResetPwdView(views.MethodView):
     decorators = [login_required]

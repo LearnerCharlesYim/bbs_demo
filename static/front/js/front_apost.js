@@ -14,9 +14,8 @@ $(function () {
 
         var title = titleInput.val();
         var board_id = boardSelect.val();
-        //获取文本内容
+        //获取ueditor文本内容
         var content = ue.getContent();
-
         zlajax.post({
             'url': '/add_post/',
             'data': {

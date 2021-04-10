@@ -1,4 +1,4 @@
-from flask import Blueprint,render_template,views,request,session,url_for,abort,g,redirect,flash
+from flask import Blueprint,render_template,views,request,session,url_for,abort,g,redirect
 from exts import alidayu,db
 from .forms import SignupForm,LoginForm,AddPostForm,AddCommentForm,SettingsForm
 from utils import restful,safeutils
@@ -9,7 +9,6 @@ from .decorators import login_required
 from flask_paginate import Pagination,get_page_parameter
 from sqlalchemy.sql import func
 from utils import profile_defs
-
 
 
 bp = Blueprint("front",__name__)
@@ -65,6 +64,7 @@ def index():
 def logout():
     del session[config.FRONT_USER_ID]
     return redirect(url_for('front.login'))
+
 
 @bp.route('/profile/')
 @login_required
@@ -128,6 +128,7 @@ def user_profile_stars(id):
     current_user = FrontUser.query.get(id)
     context = profile_defs.user_poststars_detail(current_user)
     return render_template('front/front_profile_posts.html',**context)
+
 
 @bp.route('/profile/replies')
 def replies():
@@ -232,7 +233,6 @@ def settings():
             return restful.params_error(form.get_error())
 
 
-
 #帖子详情
 @bp.route('/post/<int:post_id>/')
 def post_detail(post_id):
@@ -241,9 +241,7 @@ def post_detail(post_id):
         abort(404)
     post.read_count += 1
     db.session.commit()
-
     count = 0
-
     for comment in post.comments:
         count += 1
     if count > 5:
@@ -519,6 +517,7 @@ def load_reply():
     }
 
     return restful.success(data=data)
+
 
 #主页搜索
 @bp.route('/search/')

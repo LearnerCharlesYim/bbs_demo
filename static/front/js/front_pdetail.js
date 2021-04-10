@@ -68,62 +68,62 @@ function eventDelegate (parentSelector, targetSelector, events, foo) {
         events.split('.').forEach(function (evt) {
     // 多个父层元素的话也需要一一绑定
     Array.prototype.slice.call(document.querySelectorAll(parentSelector)).forEach(function ($p) {
-      $p.addEventListener(evt, triFunction);
-    });
-  });
+        $p.addEventListener(evt, triFunction);
+        });
+      });
     }
 }
 
 
 //评论点赞
-$(eventDelegate('#ul', '#a1', 'click', function () {
-    console.log(this);
-    var that = this;
-    var comment_id = this.getAttribute('comment-id');
-    var loginTag = document.getElementById('find-author-a');
-    if(!loginTag){
-        window.location = '/login/';
-    }else{
-        var user_id = loginTag.getAttribute('user-id');
-        if (this.getAttribute('statue') == "False"){
-        zlajax.post({
+$(eventDelegate('#ul', '#a1', 'click',
+function() {
+  console.log(this);
+  var that = this;
+  var comment_id = this.getAttribute('comment-id');
+  var loginTag = document.getElementById('find-author-a');
+  if (!loginTag) {
+    window.location = '/login/';
+  } else {
+    var user_id = loginTag.getAttribute('user-id');
+    if (this.getAttribute('statue') == "False") {
+      zlajax.post({
         'url': '/like_comment/',
-        'data':{
-            'user_id': user_id,
-            'comment_id': comment_id
+        'data': {
+          'user_id': user_id,
+          'comment_id': comment_id
         },
-        'success': function (data) {
-            if(data['code'] == 200){
-                var sum = data['data']['sum'];
-                that.innerHTML= '<span  class="glyphicon glyphicon-thumbs-up author-info " aria-hidden="true"></span>' + '('+ sum +')';
-                that.setAttribute('statue','True');
+        'success': function(data) {
+          if (data['code'] == 200) {
+            var sum = data['data']['sum'];
+            that.innerHTML = '<span  class="glyphicon glyphicon-thumbs-up author-info " aria-hidden="true"></span>' + '(' + sum + ')';
+            that.setAttribute('statue', 'True');
 
-            }else{
-                zlalert.alertInfo(data['message']);
-            }
+          } else {
+            zlalert.alertInfo(data['message']);
+          }
         }
-    });
-}else{
-        zlajax.post({
+      });
+    } else {
+      zlajax.post({
         'url': '/dislike_comment/',
-        'data':{
-            'user_id': user_id,
-            'comment_id': comment_id
+        'data': {
+          'user_id': user_id,
+          'comment_id': comment_id
         },
-        'success': function (data) {
-            if(data['code'] == 200){
-                that.setAttribute('statue','False');
-                var sum = data['data']['sum'];
-                that.innerHTML = '<span  class="glyphicon glyphicon-thumbs-up author-info " aria-hidden="true"></span>' + '('+ sum +')';
-            }else{
-                zlalert.alertInfo(data['message']);
-            }
+        'success': function(data) {
+          if (data['code'] == 200) {
+            that.setAttribute('statue', 'False');
+            var sum = data['data']['sum'];
+            that.innerHTML = '<span  class="glyphicon glyphicon-thumbs-up author-info " aria-hidden="true"></span>' + '(' + sum + ')';
+          } else {
+            zlalert.alertInfo(data['message']);
+          }
         }
-    });
+      });
 
-
-        }
-        }
+    }
+  }
 
 }));
 

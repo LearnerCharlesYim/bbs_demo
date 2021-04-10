@@ -31,10 +31,10 @@
             {% for board in boards %}
             <tr  data-name="{{ board.name }}" data-id="{{ board.id }}" >
                 <td>{{ board.name }}</td>
-                <td>0</td>
+                <td>{{ board.posts | length }}</td>
                 <td>{{ board.create_time }}</td>
                 <td>
-                    <button class="btn btn-default btn-sm edit-board-btn">编辑</button>
+                    <button class="btn btn-primary btn-sm edit-board-btn">编辑</button>
                     <button class="btn btn-danger btn-sm delete-board-btn">删除</button>
                 </td>
             </tr>

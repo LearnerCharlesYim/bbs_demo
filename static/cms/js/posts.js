@@ -45,7 +45,7 @@ $(function () {
                         'post_id': post_id
                     },
                     'success': function (data) {
-                        if(data['code'] == 200){
+                        if(data['code'] === 200){
                             window.location.reload();
                     }else{
                     zlalert.alertInfo(data['message']);
@@ -56,6 +56,7 @@ $(function () {
 });
 })
 });
+
 
 // 排序的事件
 $(function () {
